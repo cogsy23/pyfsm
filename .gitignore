@@ -1,1 +1,4 @@
 __pycache__
+venv3
+*.egg-info
+dist
