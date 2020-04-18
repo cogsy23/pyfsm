@@ -15,8 +15,8 @@ class FSM(object):
         self._transitions = {}
         self._lock = threading.RLock()
 
-    def node(self, state):
-        self._transitions[state] = {}
+    def node(self, state, fenter=None, fexit=None):
+        self._transitions[state] = ({}, fenter, fexit)
         # the default state is the first node added
         if self.current_state is None:
             self.current_state = state
@@ -27,26 +27,33 @@ class FSM(object):
         if next_state not in self._transitions:
             raise FSMException("Unkown state: {:s}".format(next_state))
 
-        self._transitions[state][signal] = (next_state, fedge)
+        self._transitions[state][0][signal] = (next_state, fedge)
 
     def __call__(self, signal):
         with self._lock:
-            cur_transitions = self._transitions[self.current_state]
+            transitions, _, fexit = self._transitions[self.current_state]
 
-            if signal not in cur_transitions:
+            if signal not in transitions:
+                # no transition for that signal so NOOP
                 return self.current_state
 
-            next_state, fedge = cur_transitions[signal]
+            next_state, fedge = transitions[signal]
+
+            _, fenter, _ = self._transitions[next_state]
 
             log.debug("{:s}({:s}) -> {:s}".format(
                 self.current_state, signal, next_state))
 
-            if fedge:
-                fedge(self.current_state, signal, next_state)
+            for f in [fexit, fedge, fenter]:
+                if f:
+                    f(self.current_state, signal, next_state)
 
             self.current_state = next_state
 
             return self.current_state
+
+    def __str__(self):
+        return self.current_state
 
 
 class TimedFSM(FSM):
@@ -56,8 +63,8 @@ class TimedFSM(FSM):
         self.timestamp = None
         self._running = False
 
-    def node(self, state, timeout=None):
-        super(TimedFSM, self).node(state)
+    def node(self, state, fenter=None, fexit=None, timeout=None):
+        super(TimedFSM, self).node(state, fenter, fexit)
         self._timeouts[state] = timeout
 
     def start(self):

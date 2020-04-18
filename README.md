@@ -26,14 +26,20 @@ state('signal_x')
 state('signal_y')
 ```
 
-## Edge callbacks
+## Transition callbacks
 
-Each edge can include a callback function like so
+Callbacks can be triggered when entering/exiting each state as well as on
+specific edges.
+
 
 ```python
 def f(current_state, signal, next_state):
     pass
 
+# for all transitions in/out of a node
+state.edge('STATE_B', fexit=f, fenter=f)
+
+# on a specific edge
 state.edge('STATE_B', 'signal_y', 'STATE_A', fedge=f)
 ```
 

@@ -16,13 +16,13 @@ def pump_off(state, signal, next_state):
 
 state = fsm.FSM()
 state.node('IDLE')
-state.node('PUMP_ON')
+state.node('PUMP_ON', fenter=pump_on, fexit=pump_off)
 
-state.edge('IDLE', 'level_high', 'PUMP_ON', fedge=pump_on)
-state.edge('IDLE', 'timeout', 'PUMP_ON', fedge=pump_on)
+state.edge('IDLE', 'level_high', 'PUMP_ON')
+state.edge('IDLE', 'timeout', 'PUMP_ON')
 
-state.edge('PUMP_ON', 'level_low', 'IDLE', fedge=pump_off)
-state.edge('PUMP_ON', 'timeout', 'IDLE', fedge=pump_off)
+state.edge('PUMP_ON', 'level_low', 'IDLE')
+state.edge('PUMP_ON', 'timeout', 'IDLE')
 
 state('level_high')
 state('level_low')
