@@ -1,1 +1,1 @@
-from .fsm import FSM, FSMException  # noqa
+from .fsm import FSM, TimedFSM, FSMException  # noqa
