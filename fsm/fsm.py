@@ -17,6 +17,7 @@ class FSM(object):
 
     def node(self, state):
         self._transitions[state] = {}
+        # the default state is the first node added
         if self.current_state is None:
             self.current_state = state
 
