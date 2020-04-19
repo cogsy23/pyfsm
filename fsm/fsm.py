@@ -46,7 +46,11 @@ class FSM(object):
 
             for f in [fexit, fedge, fenter]:
                 if f:
-                    f(self.current_state, signal, next_state)
+                    # allow for instance methods, this might get wierd...
+                    if f.__code__.co_argcount <= 1:
+                        f()
+                    else:
+                        f(self.current_state, signal, next_state)
 
             self.current_state = next_state
 
