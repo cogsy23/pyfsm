@@ -108,6 +108,6 @@ class TimedFSM(FSM):
 
     def __call__(self, signal):
         with self._lock:
-            s = super(TimedFSM, self).__call__(signal)
             self.set_timeout(self._timeouts[s])
+            s = super(TimedFSM, self).__call__(signal)
             return s
