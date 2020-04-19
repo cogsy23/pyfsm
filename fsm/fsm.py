@@ -39,20 +39,26 @@ class FSM(object):
 
             next_state, fedge = transitions[signal]
 
+            prev_state = self.current_state
+            self.current_state = next_state
+
             _, fenter, _ = self._transitions[next_state]
 
             log.debug("{:s}({:s}) -> {:s}".format(
-                self.current_state, signal, next_state))
+                prev_state, signal, next_state))
 
+            # This is RLocked, but it's possible these callbacks
+            # also cause state transisions
+            # TODO actually put some thought into callbacks causing
+            # transitions.  It's possible the later callbacks see a
+            # 'future' state
             for f in [fexit, fedge, fenter]:
                 if f:
                     # allow for instance methods, this might get wierd...
                     if f.__code__.co_argcount <= 1:
                         f()
                     else:
-                        f(self.current_state, signal, next_state)
-
-            self.current_state = next_state
+                        f(prev_state, signal, next_state)
 
             return self.current_state
 
@@ -108,6 +114,6 @@ class TimedFSM(FSM):
 
     def __call__(self, signal):
         with self._lock:
-            self.set_timeout(self._timeouts[s])
             s = super(TimedFSM, self).__call__(signal)
+            self.set_timeout(self._timeouts[s])
             return s
